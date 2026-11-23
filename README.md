@@ -9,5 +9,4 @@ A home-screen widget counting down to thesis submission (28 April 2027): whole w
 4. Long-press your home screen > Widgets > "Thesis Weeks Left" > drag it on.
 
 ## Change the deadline
-Edit `DEADLINE` in `app/src/main/java/de/thesis/weeksleft/WeeksLeftWidget.kt`
-and the caption in `app/src/main/res/values/strings.xml`.
+Edit `DEADLINE` in `app/src/main/java/de/thesis/weeksleft/WeeksLeftWidget.kt`.

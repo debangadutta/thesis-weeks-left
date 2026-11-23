@@ -1,73 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- tools:layout_* only affect the Android Studio preview: roughly a 2x2 widget on Nothing Phone (2). -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Built for a 1x1 cell. tools:layout_* only affect the Android Studio preview. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:layout_width="184dp"
-    tools:layout_height="184dp"
+    tools:layout_width="72dp"
+    tools:layout_height="72dp"
     android:id="@android:id/background"
+    android:clipToOutline="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
-    android:clipToOutline="true"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="10dp">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:importantForAccessibility="no"
+        android:src="@drawable/widget_dot" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <!-- The number, drawn in code as an image in the dot-matrix font and scaled to fit. -->
+        <ImageView
+            android:id="@+id/weeks_number"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="6dp"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/widget_number_preview"
+            android:tint="@color/widget_text_primary" />
 
         <TextView
-            android:layout_width="0dp"
+            android:id="@+id/weeks_label"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/widget_title"
+            android:layout_marginTop="3dp"
+            android:text="weeks"
             android:textAllCaps="true"
             android:letterSpacing="0.12"
             android:textColor="@color/widget_text_secondary"
-            android:textSize="11sp"
-            android:fontFamily="monospace" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:importantForAccessibility="no"
-            android:src="@drawable/widget_dot" />
+            android:textSize="9sp"
+            android:fontFamily="monospace"
+            android:maxLines="1" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/weeks_number"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="bottom|start"
-        android:text="22"
-        android:textColor="@color/widget_text_primary"
-        android:textSize="72sp"
-        android:fontFamily="@font/doto_extrabold"
-        android:includeFontPadding="false"
-        android:maxLines="1" />
-
-    <TextView
-        android:id="@+id/weeks_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="weeks left"
-        android:textAllCaps="true"
-        android:letterSpacing="0.12"
-        android:textColor="@color/widget_text_primary"
-        android:textSize="11sp"
-        android:fontFamily="monospace" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="@string/widget_caption"
-        android:letterSpacing="0.08"
-        android:textColor="@color/widget_text_tertiary"
-        android:textSize="10sp"
-        android:fontFamily="monospace" />
-</LinearLayout>
+</FrameLayout>
