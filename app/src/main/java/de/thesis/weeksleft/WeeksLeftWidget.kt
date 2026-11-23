@@ -10,10 +10,13 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.os.Build
+import android.os.Bundle
+import android.util.SizeF
 import android.widget.RemoteViews
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import kotlin.math.ceil
 
 /** Change this if the submission date ever moves. */
 val DEADLINE: LocalDate = LocalDate.of(2027, 4, 28)
@@ -21,10 +24,20 @@ val DEADLINE: LocalDate = LocalDate.of(2027, 4, 28)
 /** At or below this many days left, the widget counts days instead of weeks. */
 const val DAYS_MODE_THRESHOLD = 60L
 
+/** Widgets at least this many dp wide and tall get the 2x2 layout; smaller ones get 1x1. */
+private const val LARGE_MIN_DP = 110f
+
 class WeeksLeftWidget : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
-        ids.forEach { manager.updateAppWidget(it, buildViews(context)) }
+        ids.forEach { manager.updateAppWidget(it, buildViews(context, manager, it)) }
+    }
+
+    // Resized on the home screen. Android 12+ swaps layouts itself; older versions need this.
+    override fun onAppWidgetOptionsChanged(
+        context: Context, manager: AppWidgetManager, id: Int, options: Bundle,
+    ) {
+        manager.updateAppWidget(id, buildViews(context, manager, id))
     }
 
     // Refresh immediately when the phone's clock or time zone changes.
@@ -39,7 +52,7 @@ class WeeksLeftWidget : AppWidgetProvider() {
         }
     }
 
-    private fun buildViews(context: Context): RemoteViews {
+    private fun buildViews(context: Context, manager: AppWidgetManager, id: Int): RemoteViews {
         // Never goes below zero, so the widget just stops at 0 after the deadline.
         val daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), DEADLINE).coerceAtLeast(0)
 
@@ -50,12 +63,35 @@ class WeeksLeftWidget : AppWidgetProvider() {
             daysLeft == 1L -> "1" to "day"
             else -> daysLeft.toString() to "days"
         }
+        val image = renderNumber(context, number)
+        val description = "$number $unit left until thesis submission"
 
-        return RemoteViews(context.packageName, R.layout.widget_weeks_left).apply {
-            setImageViewBitmap(R.id.weeks_number, renderNumber(context, number))
+        val small = RemoteViews(context.packageName, R.layout.widget_small).apply {
+            setImageViewBitmap(R.id.weeks_number, image)
             setTextViewText(R.id.weeks_label, unit)
-            setContentDescription(android.R.id.background, "$number $unit left until thesis submission")
+            setContentDescription(android.R.id.background, description)
         }
+        val large = RemoteViews(context.packageName, R.layout.widget_large).apply {
+            setImageViewBitmap(R.id.weeks_number, image)
+            setTextViewText(R.id.weeks_label, "$unit left")
+            setTextViewText(R.id.weeks_due, "due " + DEADLINE.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
+            setContentDescription(android.R.id.background, description)
+        }
+
+        // Android 12+: hand over both; the launcher picks the biggest one that fits, live while resizing.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return RemoteViews(
+                mapOf(
+                    SizeF(40f, 40f) to small,
+                    SizeF(LARGE_MIN_DP, LARGE_MIN_DP) to large,
+                )
+            )
+        }
+        // Older Android: choose from the size the launcher reports.
+        val options = manager.getAppWidgetOptions(id)
+        val width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
+        val height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
+        return if (width >= LARGE_MIN_DP && height >= LARGE_MIN_DP) large else small
     }
 
     /**
@@ -66,7 +102,7 @@ class WeeksLeftWidget : AppWidgetProvider() {
     private fun renderNumber(context: Context, text: String): Bitmap {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             typeface = context.resources.getFont(R.font.doto_extrabold)
-            textSize = 160f
+            textSize = 200f
             color = Color.WHITE
         }
         // Use the height of all digits, so every number comes out the same height.
@@ -74,7 +110,7 @@ class WeeksLeftWidget : AppWidgetProvider() {
         val ink = Rect().also { paint.getTextBounds(text, 0, text.length, it) }
 
         val bitmap = Bitmap.createBitmap(
-            ceil(ink.width().toFloat()).toInt().coerceAtLeast(1),
+            ink.width().coerceAtLeast(1),
             digits.height().coerceAtLeast(1),
             Bitmap.Config.ARGB_8888,
         )

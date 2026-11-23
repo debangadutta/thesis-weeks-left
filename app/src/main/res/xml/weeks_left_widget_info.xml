@@ -7,7 +7,7 @@
     android:targetCellHeight="1"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="10800000"
-    android:initialLayout="@layout/widget_weeks_left"
-    android:previewLayout="@layout/widget_weeks_left"
+    android:initialLayout="@layout/widget_small"
+    android:previewLayout="@layout/widget_small"
     android:description="@string/widget_description"
     android:widgetCategory="home_screen" />
