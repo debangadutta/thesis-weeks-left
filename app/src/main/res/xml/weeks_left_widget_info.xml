@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- updatePeriodMillis: refresh every 3 h, so the number flips within a few hours of the change. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="10800000"
+    android:initialLayout="@layout/widget_weeks_left"
+    android:previewLayout="@layout/widget_weeks_left"
+    android:description="@string/widget_description"
+    android:widgetCategory="home_screen" />

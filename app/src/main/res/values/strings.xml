@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Thesis Weeks Left</string>
+    <string name="widget_caption">Thesis · 28 Apr 2027</string>
+    <string name="widget_description">Whole weeks until thesis submission</string>
+</resources>
