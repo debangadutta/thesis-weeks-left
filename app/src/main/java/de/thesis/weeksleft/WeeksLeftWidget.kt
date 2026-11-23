@@ -12,6 +12,9 @@ import java.time.temporal.ChronoUnit
 /** Change this if the submission date ever moves. */
 val DEADLINE: LocalDate = LocalDate.of(2027, 4, 28)
 
+/** At or below this many days left, the widget counts days instead of weeks. */
+const val DAYS_MODE_THRESHOLD = 60L
+
 class WeeksLeftWidget : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
@@ -31,14 +34,15 @@ class WeeksLeftWidget : AppWidgetProvider() {
     }
 
     private fun buildViews(context: Context): RemoteViews {
-        val daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), DEADLINE)
-        val weeks = daysLeft / 7 // whole weeks, rounded down
+        // Never goes below zero, so the widget just stops at 0 after the deadline.
+        val daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), DEADLINE).coerceAtLeast(0)
 
+        // Over 60 days: whole weeks, rounded down (always 8 or more, so always plural).
+        // 60 days or fewer: count down in days instead.
         val (number, label) = when {
-            daysLeft < 0 -> "✓" to "submitted"
-            weeks == 0L -> "0" to "weeks · final week"
-            weeks == 1L -> "1" to "week left"
-            else -> weeks.toString() to "weeks left"
+            daysLeft > DAYS_MODE_THRESHOLD -> (daysLeft / 7).toString() to "weeks left"
+            daysLeft == 1L -> "1" to "day left"
+            else -> daysLeft.toString() to "days left"
         }
 
         return RemoteViews(context.packageName, R.layout.widget_weeks_left).apply {

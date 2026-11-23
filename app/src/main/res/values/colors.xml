@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Light mode. Dark mode lives in values-night/colors.xml. -->
+<resources>
+    <color name="widget_bg">#F2F2F2</color>
+    <color name="widget_stroke">#14000000</color>
+    <color name="widget_accent">#D71921</color>
+    <color name="widget_text_primary">#000000</color>
+    <color name="widget_text_secondary">#99000000</color>
+    <color name="widget_text_tertiary">#66000000</color>
+</resources>

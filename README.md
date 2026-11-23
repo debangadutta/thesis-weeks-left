@@ -1,6 +1,6 @@
 # Thesis Weeks Left — Android widget
 
-A home-screen widget showing whole weeks until thesis submission (28 April 2027). No app screen, no permissions, no network.
+A home-screen widget counting down to thesis submission (28 April 2027): whole weeks, then days once 60 or fewer are left. No app screen, no permissions, no network.
 
 ## Install
 1. Open this folder in Android Studio (File > Open). Let Gradle sync.
