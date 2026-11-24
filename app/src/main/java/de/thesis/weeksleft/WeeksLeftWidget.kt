@@ -1,6 +1,7 @@
 package de.thesis.weeksleft
 
 import android.appwidget.AppWidgetManager
+import android.app.PendingIntent
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
@@ -18,8 +19,22 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-/** Change this if the submission date ever moves. */
-val DEADLINE: LocalDate = LocalDate.of(2027, 4, 28)
+private const val PREFS = "deadlines"
+
+/**
+ * The deadline saved for one widget. A widget with no date yet gets one month from today,
+ * saved straight away so it counts down from then on instead of moving with the calendar.
+ */
+fun loadDeadline(context: Context, id: Int): LocalDate {
+    val day = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong("w$id", Long.MIN_VALUE)
+    if (day != Long.MIN_VALUE) return LocalDate.ofEpochDay(day)
+    return LocalDate.now().plusMonths(1).also { saveDeadline(context, id, it) }
+}
+
+fun saveDeadline(context: Context, id: Int, date: LocalDate) {
+    context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+        .putLong("w$id", date.toEpochDay()).apply()
+}
 
 /** At or below this many days left, the widget counts days instead of weeks. */
 const val DAYS_MODE_THRESHOLD = 60L
@@ -31,6 +46,13 @@ class WeeksLeftWidget : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
         ids.forEach { manager.updateAppWidget(it, buildViews(context, manager, it)) }
+    }
+
+    // Widgets removed from the home screen: forget their deadlines.
+    override fun onDeleted(context: Context, ids: IntArray) {
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+        ids.forEach { prefs.remove("w$it") }
+        prefs.apply()
     }
 
     // Resized on the home screen. Android 12+ swaps layouts itself; older versions need this.
@@ -53,8 +75,9 @@ class WeeksLeftWidget : AppWidgetProvider() {
     }
 
     private fun buildViews(context: Context, manager: AppWidgetManager, id: Int): RemoteViews {
+        val deadline = loadDeadline(context, id)
         // Never goes below zero, so the widget just stops at 0 after the deadline.
-        val daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), DEADLINE).coerceAtLeast(0)
+        val daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), deadline).coerceAtLeast(0)
 
         // Over 60 days: whole weeks, rounded down (always 8 or more, so always plural).
         // 60 days or fewer: count down in days instead.
@@ -66,16 +89,27 @@ class WeeksLeftWidget : AppWidgetProvider() {
         val image = renderNumber(context, number)
         val description = "$number $unit left until thesis submission"
 
+        // Tapping the widget opens the date picker for this widget.
+        val openSettings = PendingIntent.getActivity(
+            context,
+            id,
+            Intent(context, DeadlinePickerActivity::class.java)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+
         val small = RemoteViews(context.packageName, R.layout.widget_small).apply {
             setImageViewBitmap(R.id.weeks_number, image)
             setTextViewText(R.id.weeks_label, unit)
             setContentDescription(android.R.id.background, description)
+            setOnClickPendingIntent(android.R.id.background, openSettings)
         }
         val large = RemoteViews(context.packageName, R.layout.widget_large).apply {
             setImageViewBitmap(R.id.weeks_number, image)
             setTextViewText(R.id.weeks_label, "$unit left")
-            setTextViewText(R.id.weeks_due, "due " + DEADLINE.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
+            setTextViewText(R.id.weeks_due, "due " + deadline.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
             setContentDescription(android.R.id.background, description)
+            setOnClickPendingIntent(android.R.id.background, openSettings)
         }
 
         // Android 12+: hand over both; the launcher picks the biggest one that fits, live while resizing.

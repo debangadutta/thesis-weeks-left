@@ -6,6 +6,18 @@
         android:icon="@android:drawable/ic_menu_today"
         android:allowBackup="true">
 
+        <!-- Widget settings: pick the deadline. -->
+        <activity
+            android:name=".DeadlinePickerActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:theme="@style/PickerTheme">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <receiver
             android:name=".WeeksLeftWidget"
             android:exported="true">

@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Thesis Weeks Left</string>
     <string name="widget_description">Countdown to thesis submission</string>
+    <string name="picker_title">Submission date</string>
 </resources>

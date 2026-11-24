@@ -10,4 +10,6 @@
     android:initialLayout="@layout/widget_small"
     android:previewLayout="@layout/widget_small"
     android:description="@string/widget_description"
+    android:configure="de.thesis.weeksleft.DeadlinePickerActivity"
+    android:widgetFeatures="reconfigurable"
     android:widgetCategory="home_screen" />
